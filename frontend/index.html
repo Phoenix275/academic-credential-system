@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoGov Chain - Environmental Monitoring Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .sensor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .sensor-item {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .sensor-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 5px 0;
+        }
+
+        .sensor-type {
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sensor-location {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .alert {
+            border-left-color: #e74c3c !important;
+            background: #fdf2f2 !important;
+        }
+
+        .alert .sensor-value {
+            color: #e74c3c !important;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .status.running {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.stopped {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .chart-container {
+            height: 300px;
+            margin-top: 15px;
+        }
+
+        .report-form {
+            display: grid;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-style: italic;
+        }
+
+        .error {
+            color: #e74c3c;
+            background: #fdf2f2;
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .success {
+            color: #27ae60;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .sensor-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌱 EcoGov Chain</h1>
+            <p>Blockchain-Based Municipal Environmental Impact Verification System</p>
+        </div>
+
+        <div class="dashboard">
+            <!-- Simulation Control -->
+            <div class="card">
+                <h3>🎛️ Simulation Control</h3>
+                <div>
+                    <button id="startBtn" class="button" onclick="startSimulation()">Start IoT Simulation</button>
+                    <button id="stopBtn" class="button" onclick="stopSimulation()" disabled>Stop Simulation</button>
+                    <span id="simulationStatus" class="status stopped">Stopped</span>
+                </div>
+                <div style="margin-top: 15px;">
+                    <button class="button" onclick="generateDemoData()">Generate Demo Data</button>
+                    <button class="button" onclick="loadLatestData()">Refresh Data</button>
+                </div>
+                <div id="controlMessage" style="margin-top: 10px;"></div>
+            </div>
+
+            <!-- Latest Sensor Readings -->
+            <div class="card">
+                <h3>📊 Latest Sensor Readings</h3>
+                <div id="latestReadings" class="loading">Loading sensor data...</div>
+            </div>
+
+            <!-- Sensor Statistics -->
+            <div class="card">
+                <h3>📈 Sensor Statistics</h3>
+                <div id="sensorStats" class="loading">Loading statistics...</div>
+            </div>
+
+            <!-- Environmental Trends Chart -->
+            <div class="card">
+                <h3>📉 Environmental Trends</h3>
+                <div class="chart-container">
+                    <canvas id="trendsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Citizen Reporting -->
+            <div class="card">
+                <h3>📝 Citizen Environmental Reporting</h3>
+                <div class="report-form">
+                    <div class="form-group">
+                        <label for="reportLocation">Location</label>
+                        <input type="text" id="reportLocation" placeholder="e.g., Main Street Park">
+                    </div>
+                    <div class="form-group">
+                        <label for="reportType">Issue Type</label>
+                        <select id="reportType">
+                            <option value="air_pollution">Air Pollution</option>
+                            <option value="water_contamination">Water Contamination</option>
+                            <option value="noise_violation">Noise Violation</option>
+                            <option value="waste_dumping">Illegal Waste Dumping</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reportDescription">Description</label>
+                        <textarea id="reportDescription" rows="3" placeholder="Describe the environmental issue..."></textarea>
+                    </div>
+                    <button class="button" onclick="submitCitizenReport()">Submit Report</button>
+                </div>
+                <div id="reportMessage" style="margin-top: 10px;"></div>
+            </div>
+
+            <!-- Policy Compliance Status -->
+            <div class="card">
+                <h3>⚖️ Policy Compliance Status</h3>
+                <div id="complianceStatus" class="loading">Loading compliance data...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001/api';
+        let trendsChart = null;
+
+        async function startSimulation() {
+            try {
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('controlMessage').innerHTML = '<div class="loading">Starting simulation...</div>';
+
+                const response = await fetch(`${API_BASE}/simulation/start`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('simulationStatus').className = 'status running';
+                    document.getElementById('simulationStatus').textContent = 'Running';
+                    document.getElementById('stopBtn').disabled = false;
+                    document.getElementById('controlMessage').innerHTML = `<div class="success">${data.message}</div>`;
+
+                    startDataRefresh();
+                } else {
+                    throw new Error(data.error);
+                }
+
+            } catch (error) {
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('controlMessage').innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function stopSimulation() {
+            try {
+                const response = await fetch(`${API_BASE}/simulation/stop`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('simulationStatus').className = 'status stopped';
+                    document.getElementById('simulationStatus').textContent = 'Stopped';
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('stopBtn').disabled = true;
+                    document.getElementById('controlMessage').innerHTML = `<div class="success">${data.message}</div>`;
+
+                    stopDataRefresh();
+                } else {
+                    throw new Error(data.error);
+                }
+
+            } catch (error) {
+                document.getElementById('controlMessage').innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function loadLatestData() {
+            try {
+                const response = await fetch(`${API_BASE}/sensors/latest`);
+                const data = await response.json();
+
+                const container = document.getElementById('latestReadings');
+                if (Object.keys(data).length === 0) {
+                    container.innerHTML = '<div class="loading">No sensor data available. Start simulation to generate data.</div>';
+                    return;
+                }
+
+                const html = Object.values(data).map(reading => {
+                    const alertClass = reading.isAlert ? 'alert' : '';
+                    return `
+                        <div class="sensor-item ${alertClass}">
+                            <div class="sensor-value">${reading.value} ${reading.unit}</div>
+                            <div class="sensor-type">${reading.sensorType.replace('_', ' ')}</div>
+                            <div class="sensor-location">${reading.location}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                container.innerHTML = `<div class="sensor-grid">${html}</div>`;
+
+            } catch (error) {
+                document.getElementById('latestReadings').innerHTML = `<div class="error">Error loading data: ${error.message}</div>`;
+            }
+        }
+
+        async function loadSensorStats() {
+            try {
+                const response = await fetch(`${API_BASE}/sensors/stats`);
+                const data = await response.json();
+
+                const container = document.getElementById('sensorStats');
+                if (Object.keys(data).length === 0) {
+                    container.innerHTML = '<div class="loading">No statistics available yet.</div>';
+                    return;
+                }
+
+                const html = Object.values(data).map(stat => `
+                    <div class="stat-item">
+                        <div class="stat-value">${stat.averageValue}</div>
+                        <div class="stat-label">Avg ${stat.sensorType.replace('_', ' ')}</div>
+                        <div class="stat-label">${stat.location}</div>
+                        <div class="stat-label">${stat.alertPercentage}% alerts</div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = `<div class="stats-grid">${html}</div>`;
+
+            } catch (error) {
+                document.getElementById('sensorStats').innerHTML = `<div class="error">Error loading stats: ${error.message}</div>`;
+            }
+        }
+
+        async function loadTrendsChart() {
+            try {
+                const response = await fetch(`${API_BASE}/sensors/history?hours=6`);
+                const data = await response.json();
+
+                if (data.data.length === 0) return;
+
+                const ctx = document.getElementById('trendsChart').getContext('2d');
+
+                if (trendsChart) {
+                    trendsChart.destroy();
+                }
+
+                const datasets = {};
+                const colors = {
+                    'air_quality': 'rgb(255, 99, 132)',
+                    'water_quality': 'rgb(54, 162, 235)',
+                    'noise_pollution': 'rgb(255, 205, 86)'
+                };
+
+                data.data.forEach(reading => {
+                    if (!datasets[reading.sensorType]) {
+                        datasets[reading.sensorType] = {
+                            label: reading.sensorType.replace('_', ' ').toUpperCase(),
+                            data: [],
+                            borderColor: colors[reading.sensorType] || 'rgb(75, 192, 192)',
+                            backgroundColor: (colors[reading.sensorType] || 'rgb(75, 192, 192)') + '20',
+                            tension: 0.1
+                        };
+                    }
+                    datasets[reading.sensorType].data.push({
+                        x: new Date(reading.timestamp),
+                        y: reading.value
+                    });
+                });
+
+                trendsChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        datasets: Object.values(datasets)
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'hour'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error('Error loading trends chart:', error);
+            }
+        }
+
+        async function submitCitizenReport() {
+            try {
+                const location = document.getElementById('reportLocation').value;
+                const issueType = document.getElementById('reportType').value;
+                const description = document.getElementById('reportDescription').value;
+
+                if (!location || !description) {
+                    document.getElementById('reportMessage').innerHTML = '<div class="error">Please fill in all required fields.</div>';
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE}/citizen/report`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        location,
+                        issueType,
+                        description
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('reportMessage').innerHTML = `<div class="success">Report submitted successfully! Transaction: ${data.transactionHash}</div>`;
+                    document.getElementById('reportLocation').value = '';
+                    document.getElementById('reportDescription').value = '';
+                } else {
+                    throw new Error(data.error);
+                }
+
+            } catch (error) {
+                document.getElementById('reportMessage').innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function generateDemoData() {
+            try {
+                const response = await fetch(`${API_BASE}/demo/generate-data?hours=24`);
+                const data = await response.json();
+
+                document.getElementById('controlMessage').innerHTML = `<div class="success">${data.message}</div>`;
+
+                setTimeout(() => {
+                    loadLatestData();
+                    loadSensorStats();
+                    loadTrendsChart();
+                }, 1000);
+
+            } catch (error) {
+                document.getElementById('controlMessage').innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        let refreshInterval;
+
+        function startDataRefresh() {
+            refreshInterval = setInterval(() => {
+                loadLatestData();
+                loadSensorStats();
+                loadTrendsChart();
+            }, 5000);
+        }
+
+        function stopDataRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLatestData();
+            loadSensorStats();
+            loadTrendsChart();
+        });
+    </script>
+</body>
+</html>
