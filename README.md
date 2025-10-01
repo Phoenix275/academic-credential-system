@@ -1,14 +1,14 @@
 # EcoGov Chain: Blockchain-Based Municipal Environmental Impact Verification System
 
-## 🌱 Overview
+##  Overview
 
 EcoGov Chain is a novel blockchain-based platform designed for BRAINS'25 conference demonstration that combines data science, environmentalism, and public policy to create a transparent municipal environmental monitoring system.
 
-## 🎯 Project Purpose
+##  Project Purpose
 
 This project was developed for submission to the **2025 7th Conference on Blockchain Research & Applications for Innovative Networks and Services (BRAINS)** Demo Papers track, specifically addressing the need for innovative blockchain applications in environmental governance.
 
-## 🏗️ System Architecture
+##  System Architecture
 
 ### Core Components
 
@@ -28,7 +28,7 @@ This project was developed for submission to the **2025 7th Conference on Blockc
    - Citizen reporting interface
    - Municipal compliance monitoring
 
-## 🚀 Key Features
+##  Key Features
 
 - **Real-time Environmental Monitoring**: IoT sensors track air quality, water quality, and noise pollution
 - **Automated Policy Compliance**: Smart contracts verify adherence to environmental standards
@@ -36,7 +36,7 @@ This project was developed for submission to the **2025 7th Conference on Blockc
 - **Cross-Municipal Data Sharing**: Secure, transparent data exchange between jurisdictions
 - **Immutable Audit Trail**: Blockchain ensures data integrity and transparency
 
-## 🛠️ Installation & Setup
+##  Installation & Setup
 
 ### Prerequisites
 - Node.js 20.12.1+ (Note: Hardhat recommends 22.10.0+)
@@ -95,7 +95,7 @@ The demonstration showcases a 24-hour environmental monitoring cycle with:
 4. **Reward Distribution**: Tokens awarded for compliance and reporting
 5. **Data Visualization**: Real-time charts and statistics
 
-## 🏆 Innovation Highlights
+##  Innovation Highlights
 
 ### Technical Innovation
 - First integration of IoT sensors with smart contracts for municipal governance
@@ -112,7 +112,7 @@ The demonstration showcases a 24-hour environmental monitoring cycle with:
 - Cross-jurisdictional data coordination
 - Evidence-based environmental decision making
 
-## 📝 Conference Submission
+##  Conference Submission
 
 ### BRAINS'25 Requirements Compliance
 - ✅ **Demo Paper Format**: IEEE 2-column format, maximum 2 pages
@@ -126,7 +126,7 @@ The demonstration showcases a 24-hour environmental monitoring cycle with:
 - `README.md` - System documentation
 - Complete source code for demonstration
 
-## 🔧 Technical Stack
+##  Technical Stack
 
 - **Blockchain**: Ethereum, Solidity 0.8.19, Hardhat
 - **Backend**: Node.js, Express, Web3.js, Ethers.js
@@ -134,29 +134,29 @@ The demonstration showcases a 24-hour environmental monitoring cycle with:
 - **Simulation**: Custom IoT sensor simulator
 - **Documentation**: LaTeX (IEEE format)
 
-## 📈 Evaluation Results
+##  Evaluation Results
 
 - **Data Integrity**: 100% immutable blockchain storage
 - **Policy Compliance**: Sub-second automated verification
 - **Citizen Engagement**: 40% increase in environmental reporting
 - **Gas Efficiency**: 0.023 ETH average per sensor transaction
 
-## 🌟 Future Enhancements
+##  Future Enhancements
 
 - Satellite imagery integration
 - Machine learning predictive analytics
 - Cross-chain interoperability
 - Mobile application development
 
-## 🤝 Contributing
+##  Contributing
 
 This project was developed for academic conference submission. For questions or collaboration opportunities, please refer to the conference proceedings.
 
-## 📄 License
+##  License
 
 MIT License - See LICENSE file for details
 
-## 🎯 Conference Information
+##  Conference Information
 
 **Conference**: BRAINS'25 - 7th Conference on Blockchain Research & Applications for Innovative Networks and Services
 **Track**: Demos Papers
@@ -165,4 +165,3 @@ MIT License - See LICENSE file for details
 
 ---
 
-*Developed with 🌱 for sustainable municipal governance through blockchain innovation*
